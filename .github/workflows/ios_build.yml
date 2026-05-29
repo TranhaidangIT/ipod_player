@@ -10,6 +10,9 @@ jobs:
     name: Build iOS IPA (Unsigned)
     runs-on: macos-latest  # Mac miễn phí cho public repo!
 
+    permissions:
+      contents: write  # Cần để tạo GitHub Release và upload file
+
     steps:
       # 1. Checkout code
       - name: Checkout code
