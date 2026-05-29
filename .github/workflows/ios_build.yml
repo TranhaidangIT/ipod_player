@@ -1,0 +1,75 @@
+name: 🍎 iOS Build — Unsigned IPA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Cho phép trigger thủ công trên GitHub
+
+jobs:
+  build-ios:
+    name: Build iOS IPA (Unsigned)
+    runs-on: macos-latest  # Mac miễn phí cho public repo!
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Cài Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+          cache: true  # Cache Flutter để build nhanh hơn
+
+      # 3. Lấy dependencies
+      - name: Flutter pub get
+        run: flutter pub get
+
+      # 4. Build iOS (không cần ký — dùng cho Sideloadly/AltStore)
+      - name: Build iOS release (no codesign)
+        run: |
+          flutter build ios --release --no-codesign
+
+      # 5. Đóng gói thành file .ipa
+      - name: Package .ipa
+        run: |
+          mkdir -p build/ios/ipa/Payload
+          cp -r build/ios/Release-iphoneos/Runner.app build/ios/ipa/Payload/
+          cd build/ios/ipa
+          zip -r ipod_player.ipa Payload/
+          echo "✅ IPA created: $(du -sh ipod_player.ipa | cut -f1)"
+
+      # 6. Upload IPA lên GitHub Artifacts (tải về trong 7 ngày)
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipod-player-ios-${{ github.run_number }}
+          path: build/ios/ipa/ipod_player.ipa
+          retention-days: 30  # Giữ 30 ngày
+
+      # 7. Tạo GitHub Release tự động (lưu mãi mãi!)
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "📱 Build #${{ github.run_number }}"
+          body: |
+            ## 🎵 iPod Player iOS Build
+
+            **Build**: #${{ github.run_number }}
+            **Commit**: ${{ github.sha }}
+            **Date**: ${{ github.event.head_commit.timestamp }}
+
+            ### 📥 Cách cài lên iPhone:
+            1. Tải file `ipod_player.ipa` bên dưới
+            2. Mở **Sideloadly** trên Windows
+            3. Kéo thả file `.ipa` vào Sideloadly
+            4. Nhập Apple ID → bấm Start
+            5. Vào Settings → Trust → Done!
+          files: build/ios/ipa/ipod_player.ipa
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
