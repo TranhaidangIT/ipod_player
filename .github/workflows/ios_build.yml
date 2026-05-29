@@ -19,7 +19,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'master'
+          channel: 'stable'
           cache: true  # Cache Flutter để build nhanh hơn
 
       # 3. Lấy dependencies
