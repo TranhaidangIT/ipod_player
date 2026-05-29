@@ -1,29 +1,20 @@
 import 'package:flutter/services.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
 
 class AudioFeedback {
-  static bool _canVibrate = false;
-
   static Future<void> init() async {
-    try {
-      _canVibrate = await Vibrate.canVibrate;
-    } catch (e) {
-      _canVibrate = false;
-    }
+    // Native HapticFeedback is safe to call on all devices without manual checks
   }
 
   static void playClick() {
-    // Haptic feedback
-    if (_canVibrate) {
-      Vibrate.feedback(FeedbackType.light);
-    }
+    // Native light impact haptic feedback
+    HapticFeedback.lightImpact();
+    
     // Native system click sound
     SystemSound.play(SystemSoundType.click);
   }
 
   static void playScroll() {
-    if (_canVibrate) {
-      Vibrate.feedback(FeedbackType.selection);
-    }
+    // Native selection click haptic feedback (very fast/subtle)
+    HapticFeedback.selectionClick();
   }
 }
