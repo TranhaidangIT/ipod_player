@@ -1,67 +1,37 @@
 workflows:
-  ios-testflight:
-    name: iOS TestFlight Build
+  ios-unsigned:
+    name: iOS Build (Unsigned IPA - AltStore)
     max_build_duration: 60
     instance_type: mac_mini_m2
-    integrations:
-      app_store_connect: codemagic  # Tên API key bạn tạo trong Codemagic
 
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.tranhaidang.ipodplayer
       flutter: stable
       xcode: latest
       cocoapods: default
 
     scripts:
-      - name: Set up Flutter
-        script: |
-          flutter pub get
+      - name: Get Flutter packages
+        script: flutter pub get
 
-      - name: Set app version
+      - name: Build iOS (unsigned - dùng cho AltStore/Sideloadly)
         script: |
-          BUILD_NUMBER=$(($BUILD_NUMBER))
-          echo "BUILD_NUMBER=$BUILD_NUMBER"
-          # Cập nhật version tự động theo số build
-          sed -i '' "s/version: .*/version: 1.0.0+$BUILD_NUMBER/" pubspec.yaml
-
-      - name: Flutter build iOS
+          flutter build ios --release --no-codesign
+          
+      - name: Package thành file IPA
         script: |
-          flutter build ipa \
-            --release \
-            --export-options-plist=/Users/builder/export_options.plist
-
-      - name: Create ExportOptions.plist
-        script: |
-          cat > /Users/builder/export_options.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>uploadBitcode</key>
-            <false/>
-            <key>uploadSymbols</key>
-            <true/>
-          </dict>
-          </plist>
-          EOF
+          mkdir -p build/ios/ipa
+          cd build/ios/Release-iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ../ipa/ipod_player.ipa Payload/
 
     artifacts:
-      - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
+      - build/ios/ipa/ipod_player.ipa
 
     publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        beta_groups:
-          - My iPhone  # Tên nhóm TestFlight của bạn
       email:
         recipients:
-          - your@email.com  # ← Email nhận thông báo build xong
+          - tranhaidang@email.com
         notify:
           success: true
           failure: true
