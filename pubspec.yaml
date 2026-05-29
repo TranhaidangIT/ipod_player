@@ -1,0 +1,39 @@
+name: ipod_player
+description: "Spatial Music Player — A personal classical music player inspired by Apple's minimalist aesthetic."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0-134.0.dev
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  # Audio playback
+  just_audio: ^0.9.43
+  # Scan device music library
+  on_audio_query: ^2.9.0
+  # File picker for importing MP3
+  file_picker: ^8.0.0+1
+  # State management
+  provider: ^6.1.2
+  # Settings storage
+  shared_preferences: ^2.3.2
+  # Runtime permissions (Android 13+)
+  permission_handler: ^11.3.1
+  go_router: ^17.2.3
+  flutter_animate: ^4.5.2
+  cached_network_image: ^3.4.1
+  flutter_svg: ^2.3.0
+  audioplayers: ^6.6.0
+  flutter_vibrate: ^1.4.0
+  http: ^1.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-materia
